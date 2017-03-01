@@ -64,6 +64,11 @@ SCHED_FEAT(TTWU_QUEUE, true)
  */
 SCHED_FEAT(WARN_DOUBLE_CLOCK, false)
 
+/*
+ * When doing wakeups, attempt to limit superfluous scans of the LLC domain.
+ */
+SCHED_FEAT(SIS_AVG_CPU, false)
+
 #ifdef HAVE_RT_PUSH_IPI
 /*
  * In order to avoid a thundering herd attack of CPUs that are
