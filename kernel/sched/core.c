@@ -2218,6 +2218,13 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags,
 		set_task_cpu(p, cpu);
 	}
 
+#else /* CONFIG_SMP */
+
+	if (p->in_iowait) {
+		delayacct_blkio_end(p);
+		atomic_dec(&task_rq(p)->nr_iowait);
+	}
+
 #endif /* CONFIG_SMP */
 
         ttwu_queue(p, cpu, wake_flags);
@@ -2272,6 +2279,11 @@ static void try_to_wake_up_local(struct task_struct *p, struct rq_flags *rf)
 
 	if (!task_on_rq_queued(p)) {
 		u64 wallclock = walt_ktime_clock();
+
+		if (p->in_iowait) {
+			delayacct_blkio_end(p);
+			atomic_dec(&rq->nr_iowait);
+		}
 
 		walt_update_task_ravg(rq->curr, rq, TASK_UPDATE, wallclock, 0);
 		walt_update_task_ravg(p, rq, TASK_WAKE, wallclock, 0);
