@@ -450,8 +450,13 @@
 
 /* white led was used for powersupply of White led */
 &red_led {
-	linux,name = "white";
-	qcom,duty-pcts =
-		[00 04 08 0C 0F 12 14 15 16
-		16 15 14 12 0F 0C 08 04 00];
+    linux,name = "white";
+    qcom,duty-ms = <20>;
+    qcom,start-idx = <1>;
+    qcom,idx-len = <11>;
+    qcom,duty-pcts = [00 05 0a 0f 14 1d 28 32 3c 4b 64];
+    qcom,lut-flags = <0x1f>;
+    qcom,ramp-step-ms = <100>;
+    qcom,pause-lo = <2000>;
+    qcom,pause-hi = <1000>;
 };
