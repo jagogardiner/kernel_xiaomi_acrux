@@ -1,5 +1,6 @@
 /*
  *  Copyright (C) 2009  Red Hat, Inc.
+ *  Copyright (C) 2019 XiaoMi, Inc.
  *
  *  This work is licensed under the terms of the GNU GPL, version 2. See
  *  the COPYING file in the top-level directory.
