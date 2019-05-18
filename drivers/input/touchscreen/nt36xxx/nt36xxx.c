@@ -1686,7 +1686,7 @@ static ssize_t nvt_panel_wake_gesture_store(struct device *dev,
 		ts->gesture_enabled = i;
 		return count;
 	} else {
-		dev_dbg(dev, "enable_dt2w write error\n");
+		dev_dbg(dev, "wake_gesture write error\n");
 		return -EINVAL;
 	}
 }
