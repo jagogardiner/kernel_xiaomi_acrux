@@ -293,8 +293,6 @@
 /{
 	mtp_batterydata: qcom,battery-data {
 		qcom,batt-id-range-pct = <15>;
-		#include "batterydata-E4-coslight-5500mAh.dtsi"
-		#include "batterydata-E4-atl-5500mAh.dtsi"
 		#include "fg-gen3-batterydata-itech-3000mah.dtsi"
 	};
 };
