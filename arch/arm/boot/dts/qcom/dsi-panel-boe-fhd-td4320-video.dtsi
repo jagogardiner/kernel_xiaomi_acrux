@@ -155,5 +155,11 @@
 			15 01 00 00 00 00 02 CA 1D];
 		qcom,mdss-dsi-dispparam-skin-ce-off-command = [
 			15 01 00 00 00 00 02 CA 1C];
+
+		qcom,mdss-dsi-pan-enable-dynamic-bitclk;
+		qcom,mdss-dsi-dynamic-bitclk_freq = <798240576 801594528 804948480
+			808302432 811656384>;
+		qcom,mdss-dsi-pan-enable-dynamic-fps;
+		qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
 	};
 };
