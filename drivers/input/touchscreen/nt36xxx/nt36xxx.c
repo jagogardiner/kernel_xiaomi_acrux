@@ -1748,11 +1748,13 @@ static DEVICE_ATTR(panel_display, (S_IRUGO), nvt_panel_display_show, NULL);
 static DEVICE_ATTR(grip_area, (S_IRUGO | S_IWUSR | S_IWGRP),
 		   nt36xxx_grip_area_show, nt36xxx_grip_area_store);
 
+
 static struct attribute *nvt_attr_group[] = {
 	&dev_attr_panel_vendor.attr,
 	&dev_attr_panel_color.attr,
 	&dev_attr_panel_display.attr,
 	&dev_attr_grip_area.attr,
+	NULL,
 };
 
 static int grip_area_open(struct inode *inode, struct file *file)
