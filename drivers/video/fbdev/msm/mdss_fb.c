@@ -4784,6 +4784,7 @@ static int __mdss_fb_copy_destscaler_data(struct fb_info *info,
 {
 	int    i = 0;
 	int    ret = 0;
+	u32    data_size;
 	struct mdp_destination_scaler_data __user *ds_data_user;
 	void __user *scale_data_user;
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)info->par;
@@ -4809,8 +4810,9 @@ static int __mdss_fb_copy_destscaler_data(struct fb_info *info,
 
 	ds_data_user = (struct mdp_destination_scaler_data *)
 		commit->commit_v1.dest_scaler;
-	ret = copy_from_user(ds_data, ds_data_user,
-		commit->commit_v1.dest_scaler_cnt * sizeof(*ds_data));
+	data_size = commit->commit_v1.dest_scaler_cnt *
+		sizeof(struct mdp_destination_scaler_data);
+	ret = copy_from_user(ds_data, ds_data_user, data_size);
 	if (ret) {
 		pr_err("dest scaler data copy from user failed\n");
 		return ret;
@@ -4826,14 +4828,12 @@ static int __mdss_fb_copy_destscaler_data(struct fb_info *info,
 		ds_data[i].scale = to_user_u64(&scale_data[i]);
 		if (ds_data[i].flags & (MDP_DESTSCALER_SCALE_UPDATE |
 					MDP_DESTSCALER_ENHANCER_UPDATE)) {
-			ret = copy_from_user(scale_data + i, scale_data_user,
-					     sizeof(*scale_data));
+			ret = copy_from_user(&scale_data[i], scale_data_user,
+					data_size);
 			if (ret) {
 				pr_err("scale data copy from user failed\n");
 				return ret;
 			}
-		} else {
-			memset(scale_data + i, 0, sizeof(*scale_data));
 		}
 	}
 
