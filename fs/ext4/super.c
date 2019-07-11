@@ -1410,7 +1410,7 @@ static const struct mount_opts {
 	 MOPT_NO_EXT2 | MOPT_SET},
 	{Opt_data_err_ignore, EXT4_MOUNT_DATA_ERR_ABORT,
 	 MOPT_NO_EXT2 | MOPT_CLEAR},
-	{Opt_barrier, EXT4_MOUNT_BARRIER, MOPT_CLEAR},
+	{Opt_barrier, EXT4_MOUNT_BARRIER, MOPT_SET},
 	{Opt_nobarrier, EXT4_MOUNT_BARRIER, MOPT_CLEAR},
 	{Opt_noauto_da_alloc, EXT4_MOUNT_NO_AUTO_DA_ALLOC, MOPT_SET},
 	{Opt_auto_da_alloc, EXT4_MOUNT_NO_AUTO_DA_ALLOC, MOPT_CLEAR},
