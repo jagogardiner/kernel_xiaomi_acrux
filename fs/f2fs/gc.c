@@ -84,7 +84,6 @@ static int gc_thread_func(void *data)
 		if (sbi->sb->s_writers.frozen >= SB_FREEZE_WRITE) {
 			if (!force_gc) {
 				increase_sleep_time(gc_th, &wait_ms);
-				stat_other_skip_bggc_count(sbi);
 			}
 			continue;
 		}
