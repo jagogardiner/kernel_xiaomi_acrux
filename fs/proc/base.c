@@ -1265,6 +1265,23 @@ err_task_lock:
 	task_unlock(task);
 	put_task_struct(task);
 out:
+
+	/* These apps burn through CPU in the background. Don't let them. */
+	if (!err && oom_score_adj >= 700) {
+		if (!strcmp(task_comm, "id.GoogleCamera") ||
+		    !strcmp(task_comm, "ndroid.settings") ||
+	            !strcmp(task->comm, "eaurora.snapcam")) {
+			struct task_kill_info *kinfo;
+
+			kinfo = kmalloc(sizeof(*kinfo), GFP_KERNEL);
+			if (kinfo) {
+				get_task_struct(task);
+				kinfo->task = task;
+				INIT_WORK(&kinfo->work, proc_kill_task);
+				schedule_work(&kinfo->work);
+			}
+		}
+	}
 	return err < 0 ? err : count;
 }
 
