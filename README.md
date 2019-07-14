@@ -1,5 +1,7 @@
 # Acrux kernel for MI 8 Lite (sdm660) source
 
+![logo](https://telegra.ph/file/d1db0b03507f710adc8c7.png)
+
 ## Branches and informaton
 ```
 pie: Current stable branch, if you're building inline on ROMs COMPILE DIS (obviously for 9.0 Pie) - EAS > HMP
