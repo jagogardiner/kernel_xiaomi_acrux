@@ -5,7 +5,7 @@
 ## Branches and informaton
 ```
 pie: Current stable branch, if you're building inline on ROMs COMPILE DIS (obviously for 9.0 Pie) - EAS > HMP
-develop: My developing branch - I force push a lot and if you don't like force pulling use Pie - this branch gets merged between releases if all gud
+staging: My developing branch - I force push a lot and if you don't like force pulling use Pie - this branch gets merged between releases if all gud
 hmp: (what was) A hmp kernel which tbh is quite old and depriciated, as EAS best now
 clean: If I rebase, I use this branch. Fully bootable and stable
 
