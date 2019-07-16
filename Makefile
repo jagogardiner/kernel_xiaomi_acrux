@@ -653,17 +653,6 @@ KBUILD_CFLAGS	+= -O3
 else
 KBUILD_CFLAGS   += -O3
 endif
-
-ifdef CONFIG_POLLY_CLANG
-KBUILD_CFLAGS	+= -mllvm -polly \
-		   -mllvm -polly-run-dce \
-		   -mllvm -polly-run-inliner \
-		   -mllvm -polly-opt-fusion=max \
-		   -mllvm -polly-ast-use-context \
-		   -mllvm -polly-detect-keep-going \
-		   -mllvm -polly-vectorizer=stripmine \
-		   -mllvm -polly-invariant-load-hoisting
-endif
 endif
 
 ifdef CONFIG_CC_WERROR
