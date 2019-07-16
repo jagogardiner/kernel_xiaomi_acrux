@@ -19,10 +19,10 @@ steps:
       BOT_API_KEY:
         from_secret: bot_api_key
     commands:
-      - apt-get update && apt-get install -y bison build-essential bc bison curl libssl-dev git zip libz3-dev
+      - apt-get update && apt-get install -y bison build-essential bc bison curl libssl-dev git zip
       - git clone https://github.com/nysadev/scripts.git -b master script && cd script
-      - bash dronesetup.sh --dragontc
-      - bash kernel.sh --beta --dragontc
+      - bash dronesetup.sh --clang
+      - bash kernel.sh --beta --clang
     when:
       branch:
         - staging
