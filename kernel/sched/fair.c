@@ -3805,8 +3805,7 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 				second = curr;
 		}
 
-		if (second && (sched_feat(STRICT_SKIP_BUDDY) ||
-		    wakeup_preempt_entity(second, left) < 1))
+		if (second && wakeup_preempt_entity(second, left) < 1)
 			se = second;
 	}
 
@@ -8976,17 +8975,6 @@ static struct rq *find_busiest_queue(struct lb_env *env,
 			continue;
 
 		capacity = capacity_of(i);
-
-		/*
-		 * For ASYM_CPUCAPACITY domains, don't pick a cpu that could
-		 * eventually lead to active_balancing high->low capacity.
-		 * Higher per-cpu capacity is considered better than balancing
-		 * average load.
-		 */
-		if (env->sd->flags & SD_ASYM_CPUCAPACITY &&
-		    capacity_of(env->dst_cpu) < capacity &&
-		    rq->nr_running == 1)
-			continue;
 
 		wl = weighted_cpuload(i);
 
