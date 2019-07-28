@@ -653,7 +653,7 @@ KBUILD_CFLAGS	+= -O2
 else
 ifeq ($(cc-name),gcc)
 KBUILD_CFLAGS   += -O2
-KBUILD_CFLAGS   += -mcpu=cortex-a73.cortex-a53 -mtune=cortex-a73.cortex-a53 march=armv8-a
+KBUILD_CFLAGS   += -mcpu=cortex-a73.cortex-a53 -mtune=cortex-a73.cortex-a53 -march=armv8-a
 endif
 ifeq ($(cc-name),clang)
 KBUILD_CFLAGS   += -O3
