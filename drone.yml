@@ -23,8 +23,8 @@ steps:
     commands:
       - apt-get update && apt-get install -y bison build-essential bc bison curl libssl-dev git zip python
       - git clone https://github.com/nysadev/scripts.git -b master script && cd script
-      - bash dronesetup.sh --gcc10
-      - bash kernel.sh --beta --gcc10
+      - bash dronesetup.sh --clang
+      - bash kernel.sh --beta --clang
     when:
       branch:
         - staging
