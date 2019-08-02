@@ -527,6 +527,14 @@
 	ranges = <0 0 0 0xffffffff>;
 	compatible = "simple-bus";
 
+	ramoops {
+		compatible = "ramoops";
+		memory-region = <&ramoops_mem>;
+		record-size = <0x0 0x20000>;
+		console-size = <0x0 0x100000>;
+		pmsg-size = <0x0 0x80000>;
+	};
+
 	intc: interrupt-controller@17a00000 {
 		compatible = "arm,gic-v3";
 		reg = <0x17a00000 0x10000>,       /* GICD */
