@@ -491,10 +491,10 @@
 		       label = "dfps_data_mem";
 		};
 
-		ramoops_mem: ramoops_mem_region@0x9f800000 {
+		ramoops_mem: ramoops_mem_region@0x9f900000 {
 			no-map;
 			compatible = "removed-dma-pool";
-			reg = <0 0x9f800000 0 0x200000>;
+			reg = <0 0x9f900000 0 0x200000>;
 			label = "ramoops_mem";
 		};
 	};
