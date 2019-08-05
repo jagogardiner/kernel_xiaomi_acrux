@@ -9590,7 +9590,7 @@ more_balance:
 		 * Set loop_max when rq's lock is taken to prevent a race.
 		 */
 		env.loop_max = min(sysctl_sched_nr_migrate,
-							busiest->cfs.h_nr_running);
+							busiest->nr_running);
 
 		update_rq_clock(busiest);
 
