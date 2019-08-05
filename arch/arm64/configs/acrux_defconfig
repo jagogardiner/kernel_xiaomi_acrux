@@ -2,6 +2,8 @@
 # Automatically generated file; DO NOT EDIT.
 # Linux/arm64 4.4.186 Kernel Configuration
 #
+CONFIG_LITTLE_CPU_MASK=15
+CONFIG_BIG_CPU_MASK=240
 CONFIG_ARM64=y
 CONFIG_64BIT=y
 CONFIG_ARCH_PHYS_ADDR_T_64BIT=y
