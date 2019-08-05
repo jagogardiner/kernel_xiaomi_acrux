@@ -71,30 +71,22 @@ struct ion_buffer *ion_handle_buffer(struct ion_handle *handle);
  *			handle, used for debugging
 */
 struct ion_buffer {
-	struct kref ref;
-	union {
-		struct rb_node node;
-		struct list_head list;
-	};
+	struct list_head list;
 	struct ion_device *dev;
 	struct ion_heap *heap;
 	unsigned long flags;
 	unsigned long private_flags;
 	size_t size;
-	union {
-		void *priv_virt;
-		ion_phys_addr_t priv_phys;
-	};
-	struct mutex lock;
+	void *priv_virt;
+	struct mutex kmap_lock;
+	struct mutex page_lock;
+	struct mutex vma_lock;
+	struct kref ref;
 	int kmap_cnt;
 	void *vaddr;
 	struct sg_table *sg_table;
 	struct page **pages;
 	struct list_head vmas;
-	/* used to track orphaned buffers */
-	int handle_count;
-	char task_comm[TASK_COMM_LEN];
-	pid_t pid;
 };
 void ion_buffer_destroy(struct ion_buffer *buffer);
 
@@ -273,29 +265,7 @@ struct ion_heap {
 	size_t free_list_size;
 	spinlock_t free_lock;
 	wait_queue_head_t waitqueue;
-	struct task_struct *task;
-
-	int (*debug_show)(struct ion_heap *heap, struct seq_file *, void *);
-	atomic_long_t total_allocated;
-	atomic_long_t total_handles;
 };
-
-/**
- * ion_buffer_cached - this ion buffer is cached
- * @buffer:		buffer
- *
- * indicates whether this ion buffer is cached
- */
-bool ion_buffer_cached(struct ion_buffer *buffer);
-
-/**
- * ion_buffer_fault_user_mappings - fault in user mappings of this buffer
- * @buffer:		buffer
- *
- * indicates whether userspace mappings of this buffer will be faulted
- * in, this can affect how buffers are allocated from the heap.
- */
-bool ion_buffer_fault_user_mappings(struct ion_buffer *buffer);
 
 /**
  * ion_device_create - allocates and returns an ion device
@@ -509,7 +479,7 @@ struct ion_page_pool {
 	int low_count;
 	struct list_head high_items;
 	struct list_head low_items;
-	struct mutex mutex;
+	spinlock_t lock;
 	struct device *dev;
 	gfp_t gfp_mask;
 	unsigned int order;
@@ -581,9 +551,15 @@ int ion_walk_heaps(struct ion_client *client, int heap_id,
 			enum ion_heap_type type, void *data,
 			int (*f)(struct ion_heap *heap, void *data));
 
-struct ion_handle *ion_handle_get_by_id_nolock(struct ion_client *client,
-					       int id);
+struct ion_handle *ion_handle_find_by_id(struct ion_client *client, int id);
 
-int ion_handle_put(struct ion_handle *handle);
+void ion_handle_put(struct ion_handle *handle);
+
+struct ion_buffer *get_buffer(struct ion_handle *handle);
+
+static inline bool ion_buffer_cached(struct ion_buffer *buffer)
+{
+	return buffer->flags & ION_FLAG_CACHED;
+}
 
 #endif /* _ION_PRIV_H */
