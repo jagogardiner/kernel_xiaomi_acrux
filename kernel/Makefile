@@ -128,5 +128,3 @@ $(obj)/config_data.gz: arch/arm64/configs/platina_user_defconfig FORCE
 targets += config_data.h
 $(obj)/config_data.h: $(obj)/config_data.gz FORCE
 	$(call filechk,ikconfiggz)
-
-obj-y += sultan_bench.o
