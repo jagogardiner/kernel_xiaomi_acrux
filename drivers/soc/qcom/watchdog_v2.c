@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -26,10 +26,10 @@
 #include <linux/cpu.h>
 #include <linux/cpu_pm.h>
 #include <linux/platform_device.h>
+#include <linux/nmi.h>
 #include <linux/wait.h>
 #include <soc/qcom/scm.h>
 #include <soc/qcom/memory_dump.h>
-#include <soc/qcom/minidump.h>
 #include <soc/qcom/watchdog.h>
 
 #define MODULE_NAME "msm_watchdog"
@@ -87,6 +87,7 @@ struct msm_watchdog_data {
 
 	struct task_struct *watchdog_task;
 	struct timer_list pet_timer;
+	struct timer_list pet_observer;
 	wait_queue_head_t pet_complete;
 
 	bool timer_expired;
@@ -199,6 +200,7 @@ static void wdog_disable(struct msm_watchdog_data *wdog_dd)
 	smp_mb();
 	atomic_notifier_chain_unregister(&panic_notifier_list,
 						&wdog_dd->panic_blk);
+	del_timer_sync(&wdog_dd->pet_observer);
 	del_timer_sync(&wdog_dd->pet_timer);
 	/* may be suspended after the first write above */
 	__raw_writel(0, wdog_dd->base + WDT0_EN);
@@ -376,6 +378,45 @@ static void ping_other_cpus(struct msm_watchdog_data *wdog_dd)
 	}
 }
 
+#define PET_THRESHOLD_SECS (12)
+
+static void show_blocked_states(void)
+{
+	struct task_struct *g, *p;
+	rcu_read_lock();
+	for_each_process_thread(g, p) {
+		/*
+		 * reset the NMI-timeout, listing all files on a slow
+		 * console might take a lot of time:
+		 */
+		touch_nmi_watchdog();
+		if (p->state & TASK_UNINTERRUPTIBLE)
+			sched_show_task(p);
+	}
+	rcu_read_unlock();
+}
+
+static void pet_observer_fn(unsigned long data)
+{
+	struct msm_watchdog_data *wdog_dd =
+		(struct msm_watchdog_data *)data;
+	int pet_timeout = (sched_clock() - wdog_dd->last_pet) / NSEC_PER_SEC;
+
+	if (pet_timeout < PET_THRESHOLD_SECS)
+		mod_timer(&wdog_dd->pet_observer, jiffies + msecs_to_jiffies(
+				(PET_THRESHOLD_SECS - pet_timeout) * 1000));
+	else {
+		pr_warn("MSM watchdog blocked for %d seconds\n", pet_timeout);
+		pr_warn("  Dump all CPU backtrace:\n");
+		trigger_all_cpu_backtrace();
+		pr_warn("  Show Blocked State:\n");
+		show_blocked_states();
+
+		mod_timer(&wdog_dd->pet_observer,
+				jiffies + msecs_to_jiffies(1 * 1000));
+	}
+}
+
 static void pet_task_wakeup(unsigned long data)
 {
 	struct msm_watchdog_data *wdog_dd =
@@ -461,6 +502,7 @@ static int msm_watchdog_remove(struct platform_device *pdev)
 	if (wdog_dd->irq_ppi)
 		free_percpu(wdog_dd->wdog_cpu_dd);
 	printk(KERN_INFO "MSM Watchdog Exit - Deactivated\n");
+	del_timer_sync(&wdog_dd->pet_observer);
 	del_timer_sync(&wdog_dd->pet_timer);
 	kthread_stop(wdog_dd->watchdog_task);
 	kfree(wdog_dd);
@@ -531,8 +573,6 @@ void register_scan_dump(struct msm_watchdog_data *wdog_dd)
 
 	dump_data->addr = virt_to_phys(dump_addr);
 	dump_data->len = wdog_dd->scandump_size;
-	strlcpy(dump_data->name, "KSCANDUMP", sizeof(dump_data->name));
-
 	dump_entry.id = MSM_DUMP_DATA_SCANDUMP;
 	dump_entry.addr = virt_to_phys(dump_data);
 	ret = msm_dump_data_register(MSM_DUMP_TABLE_APPS, &dump_entry);
@@ -617,9 +657,6 @@ static void configure_bark_dump(struct msm_watchdog_data *wdog_dd)
 			cpu_data[cpu].addr = virt_to_phys(cpu_buf +
 							cpu * MAX_CPU_CTX_SIZE);
 			cpu_data[cpu].len = MAX_CPU_CTX_SIZE;
-			snprintf(cpu_data[cpu].name, sizeof(cpu_data[cpu].name),
-				"KCPU_CTX%d", cpu);
-
 			dump_entry.id = MSM_DUMP_DATA_CPU_CTX + cpu;
 			dump_entry.addr = virt_to_phys(&cpu_data[cpu]);
 			ret = msm_dump_data_register(MSM_DUMP_TABLE_APPS,
@@ -737,6 +774,14 @@ static void init_watchdog_data(struct msm_watchdog_data *wdog_dd)
 	if (ipi_opt_en)
 		cpu_pm_register_notifier(&wdog_cpu_pm_nb);
 	dev_info(wdog_dd->dev, "MSM Watchdog Initialized\n");
+
+	init_timer(&wdog_dd->pet_observer);
+	wdog_dd->pet_observer.data = (unsigned long)wdog_dd;
+	wdog_dd->pet_observer.function = pet_observer_fn;
+	wdog_dd->pet_observer.expires =
+		msecs_to_jiffies(PET_THRESHOLD_SECS * 1000);
+	add_timer(&wdog_dd->pet_observer);
+
 	return;
 }
 
@@ -835,7 +880,6 @@ static int msm_watchdog_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct msm_watchdog_data *wdog_dd;
-	struct md_region md_entry;
 
 	if (!pdev->dev.of_node || !enable)
 		return -ENODEV;
@@ -857,15 +901,7 @@ static int msm_watchdog_probe(struct platform_device *pdev)
 		goto err;
 	}
 	init_watchdog_data(wdog_dd);
-
-	/* Add wdog info to minidump table */
-	strlcpy(md_entry.name, "KWDOGDATA", sizeof(md_entry.name));
-	md_entry.virt_addr = (uintptr_t)wdog_dd;
-	md_entry.phys_addr = virt_to_phys(wdog_dd);
-	md_entry.size = sizeof(*wdog_dd);
-	if (msm_minidump_add_region(&md_entry))
-		pr_info("Failed to add RTB in Minidump\n");
-
+	wdog_disable(wdog_dd);
 	return 0;
 err:
 	kzfree(wdog_dd);
@@ -873,7 +909,8 @@ err:
 }
 
 static const struct dev_pm_ops msm_watchdog_dev_pm_ops = {
-	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(msm_watchdog_suspend, msm_watchdog_resume)
+	.suspend_noirq = msm_watchdog_suspend,
+	.resume_noirq = msm_watchdog_resume,
 };
 
 static struct platform_driver msm_watchdog_driver = {
