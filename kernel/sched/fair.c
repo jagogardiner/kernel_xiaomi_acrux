@@ -771,6 +771,11 @@ void init_entity_runnable_average(struct sched_entity *se)
 		sa->runnable_load_avg = sa->load_avg = scale_load_down(se->load.weight);
 	sa->runnable_load_sum = sa->load_sum = LOAD_AVG_MAX;
 
+	/*
+	 * At this point, util_avg won't be used in select_task_rq_fair anyway
+	 */
+	sa->util_avg = 0;
+	sa->util_sum = 0;
 	/* when this task enqueue'ed, it will contribute to its cfs_rq's load_avg */
 }
 
