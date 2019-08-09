@@ -5210,20 +5210,12 @@ EXPORT_SYMBOL_GPL(yield_to);
  */
 long __sched io_schedule_timeout(long timeout)
 {
-	int old_iowait = current->in_iowait;
-	struct rq *rq;
+	int token;
 	long ret;
 
-	current->in_iowait = 1;
-	blk_schedule_flush_plug(current);
-
-	delayacct_blkio_start();
-	rq = raw_rq();
-	atomic_inc(&rq->nr_iowait);
+	token = io_schedule_prepare();
 	ret = schedule_timeout(timeout);
-	current->in_iowait = old_iowait;
-	atomic_dec(&rq->nr_iowait);
-	delayacct_blkio_end();
+	io_schedule_finish(token);
 
 	return ret;
 }
