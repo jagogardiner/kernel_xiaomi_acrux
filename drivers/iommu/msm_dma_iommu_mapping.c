@@ -40,7 +40,6 @@ static struct msm_iommu_map *msm_iommu_map_lookup(struct msm_iommu_meta *meta,
 		if (map->dev == dev)
 			return map;
 	}
-	read_unlock(&rb_tree_lock);
 
 	return NULL;
 }
