@@ -7,7 +7,10 @@
 pie: Current stable branch, if you're building inline on ROMs COMPILE DIS (obviously for 9.0 Pie) - EAS > HMP
 staging: My developing branch - I force push a lot and if you don't like force pulling use Pie - this branch gets merged between releases if all gud
 hmp: (what was) A hmp kernel which tbh is quite old and depriciated, as EAS best now
+sdm660-em: My current energy model
+meme-commits: You can guess what that is.
 clean: If I rebase, I use this branch. Fully bootable and stable
+readme: ...?
 
 From the creation of this README, all releases will be tagged and will have release candidates + full releases under Pie.
 I'm planning to add CI/CD support soon but cba to setup Drone.
