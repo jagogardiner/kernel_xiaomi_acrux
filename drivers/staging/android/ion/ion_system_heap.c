@@ -37,7 +37,7 @@ static gfp_t high_order_gfp_flags = (GFP_HIGHUSER | __GFP_NOWARN |
 static gfp_t low_order_gfp_flags  = (GFP_HIGHUSER | __GFP_NOWARN);
 
 #ifndef CONFIG_ALLOC_BUFFERS_IN_4K_CHUNKS
-static const unsigned int orders[] = {9, 8, 4, 0};
+static const unsigned int orders[] = {4, 0};
 #else
 static const unsigned int orders[] = {0};
 #endif
@@ -99,11 +99,6 @@ size_t ion_system_heap_secure_page_pool_total(struct ion_heap *heap,
 	}
 
 	return total << PAGE_SHIFT;
-}
-
-static int ion_heap_is_system_heap_type(enum ion_heap_type type)
-{
-	return type == ((enum ion_heap_type)ION_HEAP_TYPE_SYSTEM);
 }
 
 static struct page *alloc_buffer_page(struct ion_system_heap *heap,
@@ -359,13 +354,6 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 	struct device *dev = heap->priv;
 	struct page_info info_onstack[SZ_4K / sizeof(struct page_info)];
 
-	if (ion_heap_is_system_heap_type(buffer->heap->type) &&
-	    is_secure_vmid_valid(vmid)) {
-		pr_info("%s: System heap doesn't support secure allocations\n",
-			__func__);
-		return -EINVAL;
-	}
-
 	if (align > PAGE_SIZE)
 		return -EINVAL;
 
@@ -430,11 +418,13 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 		ret = sg_alloc_table(&table_sync, nents_sync, GFP_KERNEL);
 		if (ret)
 			goto err_free_sg;
+		sg_sync = table_sync.sgl;
+	} else {
+		sg_sync = NULL;
 	}
 
 	i = 0;
 	sg = table->sgl;
-	sg_sync = table_sync.sgl;
 
 	/*
 	 * We now have two separate lists. One list contains pages from the
@@ -451,7 +441,8 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 				i = process_info(info, sg, sg_sync, &data, i);
 				free_info(info, info_onstack,
 					  ARRAY_SIZE(info_onstack));
-				sg_sync = sg_next(sg_sync);
+				if (sg_sync)
+					sg_sync = sg_next(sg_sync);
 			} else {
 				i = process_info(tmp_info, sg, 0, 0, i);
 				free_info(tmp_info, info_onstack,
@@ -460,7 +451,8 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 		} else if (info) {
 			i = process_info(info, sg, sg_sync, &data, i);
 			free_info(info, info_onstack, ARRAY_SIZE(info_onstack));
-			sg_sync = sg_next(sg_sync);
+			if (sg_sync)
+				sg_sync = sg_next(sg_sync);
 		} else if (tmp_info) {
 			i = process_info(tmp_info, sg, 0, 0, i);
 			free_info(tmp_info, info_onstack,
@@ -497,7 +489,7 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 
 err_free_sg2:
 	/* We failed to zero buffers. Bypass pool */
-	buffer->private_flags |= ION_PRIV_FLAG_SHRINKER_FREE;
+	buffer->flags |= ION_PRIV_FLAG_SHRINKER_FREE;
 
 	if (vmid > 0)
 		ion_system_secure_heap_unassign_sg(table, vmid);
