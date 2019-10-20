@@ -6,13 +6,13 @@ clone:
 
 steps:
   - name: build
-    image: raphielscape/spinsinfra:fedora
+    image: ubuntu:latest
     environment:
       BOT_API_TOKEN:
         from_secret: BOT_API_TOKEN
       KERNELRELEASE: "Yuri"
     commands:
-      - yum install -y openssl-devel
+      - apt-get update && apt-get install -y bison build-essential bc bison curl libssl-dev git zip python
       - git clone https://github.com/nysascape/scriptsv2.git -b drone kernelscripts
       - source ./kernelscripts/envsetup.sh
       - bash kernelscripts/drone.sh
