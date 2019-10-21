@@ -14,7 +14,7 @@ steps:
     commands:
       - yum install -y openssl-devel
       - git clone https://github.com/nysascape/scriptsv2.git -b drone kernelscripts
-      - source ./kernelscripts/envsetup.sh --clang
+      - source ./kernelscripts/envsetup.sh
       - bash kernelscripts/drone.sh
     when:
       branch:
