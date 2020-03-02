@@ -212,9 +212,8 @@ endif
 
 dtb-$(CONFIG_ARCH_MSMHAMSTER) += msmhamster-rumi.dtb
 
-dtb-$(CONFIG_ARCH_SDM660) += sdm660-mtp.dtb \
-	platina-sdm660.dtb \
-	xiaomi-sdm660.dtb \
+dtb-$(CONFIG_ARCH_SDM660) += platina-sdm660.dtb \
+        xiaomi-sdm660.dtb
 
 dtb-$(CONFIG_ARCH_SDM630) += sdm630-rumi.dtb \
 	sdm630-pm660a-rumi.dtb \
