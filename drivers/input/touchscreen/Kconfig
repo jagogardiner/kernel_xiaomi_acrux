@@ -13,9 +13,6 @@ if INPUT_TOUCHSCREEN
 
 source "drivers/input/touchscreen/synaptics_dsx/Kconfig"
 source "drivers/input/touchscreen/synaptics_tcm/Kconfig"
-source "drivers/input/touchscreen/ft5x46/Kconfig"
-source "drivers/input/touchscreen/gt9xx/Kconfig"
-source "drivers/input/touchscreen/focaltech_touch/Kconfig"
 
 config OF_TOUCHSCREEN
 	def_tristate INPUT
