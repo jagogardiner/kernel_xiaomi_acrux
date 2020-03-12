@@ -35,7 +35,6 @@ static ssize_t adsp_boot_store(struct kobject *kobj,
 
 struct adsp_loader_private {
 	void *pil_h;
-	const char *fw_name;
 	struct kobject *boot_adsp_obj;
 	struct attribute_group *attr_group;
 };
@@ -129,8 +128,7 @@ load_adsp:
 				goto fail;
 			}
 
-			priv->pil_h = subsystem_get_with_fwname("adsp",
-								priv->fw_name);
+			priv->pil_h = subsystem_get("adsp");
 
 			if (IS_ERR(priv->pil_h)) {
 				dev_err(&pdev->dev, "%s: pil get failed,\n",
@@ -237,9 +235,6 @@ static int adsp_loader_init_sysfs(struct platform_device *pdev)
 		goto error_return;
 	}
 
-	/*get fw name*/
-	of_property_read_string(pdev->dev.of_node, "qcom,firmware-name",
-							&priv->fw_name);
 
 	adsp_private = pdev;
 
