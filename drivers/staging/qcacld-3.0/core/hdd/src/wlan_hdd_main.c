@@ -381,47 +381,6 @@ int hdd_validate_channel_and_bandwidth(hdd_adapter_t *adapter,
 	return 0;
 }
 
-/**
- * hdd_wait_for_recovery_completion() - Wait for cds recovery completion
- *
- * Block the unloading of the driver (or) interface up until the
- * cds recovery is completed
- *
- * Return: true for recovery completion else false
- */
-static bool hdd_wait_for_recovery_completion(void)
-{
-	int retry = 0;
-
-	/* Wait for recovery to complete */
-	while (cds_is_driver_recovering()) {
-		if (retry == HDD_MOD_EXIT_SSR_MAX_RETRIES/2)
-			hdd_err("Recovery in progress; wait here!!!");
-
-		if (g_is_system_reboot_triggered) {
-			hdd_info("System Reboot happening ignore unload!!");
-			return false;
-		}
-
-		msleep(1000);
-		if (retry++ == HDD_MOD_EXIT_SSR_MAX_RETRIES) {
-			hdd_err("SSR never completed, error");
-			/*
-			 * Trigger the bug_on in the internal builds, in the
-			 * customer builds self-recovery will be enabled
-			 * in those cases just return error.
-			 */
-			if (cds_is_self_recovery_enabled())
-				return false;
-			QDF_BUG(0);
-		}
-	}
-
-	hdd_info("Recovery completed successfully!");
-	return true;
-}
-
-
 static int __hdd_netdev_notifier_call(struct notifier_block *nb,
 				    unsigned long state, void *data)
 {
@@ -12821,16 +12780,6 @@ class_err:
 	unregister_chrdev_region(device, dev_num);
 dev_alloc_err:
 	return -ENODEV;
-}
-
-static void wlan_hdd_state_ctrl_param_destroy(void)
-{
-	cdev_del(&wlan_hdd_state_cdev);
-	device_destroy(class, device);
-	class_destroy(class);
-	unregister_chrdev_region(device, dev_num);
-
-	pr_info("Device node unregistered");
 }
 
 /**
