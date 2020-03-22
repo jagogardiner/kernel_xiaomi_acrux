@@ -572,7 +572,6 @@ static struct gpio_chip msm_gpio_template = {
 	.request          = gpiochip_generic_request,
 	.free             = gpiochip_generic_free,
 	.dbg_show         = msm_gpio_dbg_show,
-	.print_stats       = msm_gpio_print_stats,
 };
 
 /* For dual-edge interrupts in software, since some hardware has no
