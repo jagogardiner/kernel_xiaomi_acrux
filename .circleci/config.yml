@@ -9,7 +9,7 @@ jobs:
            apt-get -y update && apt-get -y upgrade && apt-get -y install bc build-essential zip gcc clang libc6 curl libstdc++6 git wget libssl-dev zstd openjdk-12-jdk openjdk-12-jre
            git clone --depth=1 https://github.com/nysascape/kernel_xiaomi_acrux -b $CIRCLE_BRANCH acrux
            cd acrux
-           git clone https://github.com/nysascape/scripts -b master kscripts
+           git clone --depth=1 https://github.com/nysascape/scripts -b master kscripts
            source ./kscripts/envsetup.sh --clang
            ./kscripts/circle.sh --clang
 workflows:
