@@ -456,7 +456,7 @@ static void gic_show_resume_irq(struct gic_chip_data *gic)
 		/* if (irq == 198)
 			continue; */
 
-		log_wakeup_reason(irq);
+		log_base_wakeup_reason(irq);
 	}
 }
 
